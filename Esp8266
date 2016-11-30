@@ -1,0 +1,119 @@
+#include "ESP8266.h"
+ESP8266 wifi(Serial3);
+
+#define SSID        "NHU-A441"
+#define PASSWORD    "nhu-a441"
+
+// ThingSpeak Settings
+char thingSpeakAddress[] = "35.163.200.232";
+int failedCounter = 0;
+int potPin = 0;
+
+float temperature = 0;
+long val=0;
+
+int photocellPin = A2;
+int va = 0;
+
+void setup()
+{
+  
+  // Start Serial for debugging on the Serial Monitor
+  Serial.begin(9600);
+  //Serial.print("IP:");
+ // Serial.println( wifi.getLocalIP().c_str());   
+ 
+  Serial.print("setup begin\r\n");
+
+    Serial.print("FW Version: ");
+    Serial.println(wifi.getVersion().c_str());
+    
+    if (wifi.setOprToStation()) {
+        Serial.print("to station ok\r\n");
+    } else {
+        Serial.print("to station err\r\n");
+    }
+
+    if (wifi.joinAP(SSID, PASSWORD)) {
+        Serial.print("Join AP success\r\n");
+        Serial.print("IP: ");       
+        Serial.println(wifi.getLocalIP().c_str());
+    } else {
+        Serial.print("Join AP failure\r\n");
+    }
+    
+}
+
+void loop()
+{
+
+  
+  uint8_t buffer[1024] = {0};
+  // Read value from Analog Input Pin 0
+  String analogValue0 = "10224076";
+
+ String analogValue1= String(temperature);
+  String analogValue2= String(va);
+ 
+
+  if (wifi.createTCP(thingSpeakAddress, 80)) {
+      Serial.println("create tcp ok\r\n");
+  } else {
+      Serial.println("create tcp err\r\n");
+      return;
+  }
+  //35.163.200.232 210.240.202.109
+  String post ="POST /testard.php HTTP/1.1 \r\nHost: 35.163.200.232\r\nConnection: close\r\n";
+  post +="Content-Type: application/x-www-form-urlencoded\r\n";
+  
+  post +="Content-Length: ";
+  post +=(analogValue1+analogValue2.length()+9);  //10224076 +9 -> 16
+  post +="\r\n\r\n";
+  
+  post +="sendthis=";
+  post +=analogValue1;
+  post +="sendthis2=";
+  post +=analogValue2;
+
+   //post +=analogValue0;
+   
+  Serial.println(post);
+  wifi.send((const uint8_t*)post.c_str(), post.length());
+
+  uint32_t len = wifi.recv(buffer, sizeof(buffer), 10000);
+  if (len > 0) {
+      Serial.println("Received:[");
+      for(uint32_t i = 0; i < 200; i++) {
+          Serial.print((char)buffer[i]);
+      }
+      Serial.println("]\r\n");
+  }
+  else {
+    failedCounter++;
+    Serial.println("Connection to ThingSpeak Failed ("+String(failedCounter, DEC)+")");   
+  }
+  if (wifi.releaseTCP()) {
+      Serial.print("release tcp ok\r\n");
+  } else {
+      Serial.print("release tcp err\r\n");
+  }
+  
+  {
+val=analogRead(potPin);
+  temperature = (val*0.0048828125*100);
+// Serial.print("Tep= ");
+// Serial.print(temperature);
+  //Serial.println(" C");
+  delay(500);
+  }
+  
+{
+va = analogRead(photocellPin); //讀取火焰感測器 (A2)上的值
+//Serial.print("va:");//顯示讀到的感測值
+//Serial.print(va);
+//Serial.println();
+delay(500);
+}
+  
+}
+
