@@ -1,5 +1,5 @@
 <?
-$link  =mysqli_connect("localhost","root","60d62efd9d36") or die('無法連接'.mysql_error()); // 建立MySQL的資料庫連結
+$link  =mysqli_connect("localhost","root_sensorlogs","pass_sensorlogs") or die('無法連接'.mysql_error()); // 建立MySQL的資料庫連結
 
 mysqli_select_db($link,'sensorlogs')or die ('無法選擇資料庫'.mysql_error()); // 選擇資料庫
 
