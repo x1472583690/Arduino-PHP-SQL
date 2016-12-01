@@ -72,7 +72,7 @@ void loop()
   
   post +="sendthis=";
   post +=analogValue1;
-  post +="sendthis2=";
+  post +="&sendthis2=";
   post +=analogValue2;
 
    //post +=analogValue0;
