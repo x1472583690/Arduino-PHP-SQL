@@ -9,7 +9,7 @@ mysqli_query($link,  'SET collation_connection = 'utf8_general_ci'');
 
 $sql =INSERT INTO sensorlogs (Id,Co,Tempeerature,Voltage,CreateDate)  VALUES ( NULL ,NULL ,’$_POST["sendthis"]’,’$_POST["sendthis2"]’NULL);  //新增資料
 
-//$sql =INSERT INTO sensorlogs (Tempeerature,Voltage)  VALUES ( ’$_POST["sendthis"]’,’$_POST["sendthis2"]’);  //新增資料
+$sql =INSERT INTO sensorlogs (Tempeerature,Voltage)  VALUES ( ’$_POST["sendthis"]’,’$_POST["sendthis2"]’);  //新增資料
 
 
 mysqli_query($link,$sql)or die ("無法新增".mysql_error()); //執行sql語法
