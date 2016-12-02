@@ -5,7 +5,7 @@ ESP8266 wifi(Serial3);
 #define PASSWORD    "nhu-a441"
 
 // ThingSpeak Settings
-char thingSpeakAddress[] = "35.163.200.232";
+char thingSpeakAddress[] = "203.72.0.26";
 int failedCounter = 0;
 int potPin = 0;
 
@@ -63,19 +63,23 @@ void loop()
       return;
   }
   //35.163.200.232 210.240.202.109
-  String post ="POST /testard.php HTTP/1.1 \r\nHost: 35.163.200.232\r\nConnection: close\r\n";
+ ///testard.php
+  String post ="POST /~nhu1419/testard.php HTTP/1.1 \r\nHost: 203.72.0.26\r\nConnection: close\r\n";
   post +="Content-Type: application/x-www-form-urlencoded\r\n";
   
   post +="Content-Length: ";
-  post +=(analogValue1+analogValue2.length()+9);  //10224076 +9 -> 16
+  post +=(analogValue0.length()+9);  //10224076 +9 -> 16
   post +="\r\n\r\n";
+  
+  //post +=analogValue0;
   
   post +="sendthis=";
   post +=analogValue1;
-  post +="&sendthis2=";
-  post +=analogValue2;
+  //post +="&sendthis2=";
+  //post +=analogValue2;
 
-   //post +=analogValue0;
+
+ 
    
   Serial.println(post);
   wifi.send((const uint8_t*)post.c_str(), post.length());
@@ -97,6 +101,7 @@ void loop()
   } else {
       Serial.print("release tcp err\r\n");
   }
+  delay(5000);
   
   {
 val=analogRead(potPin);
@@ -116,4 +121,3 @@ delay(500);
 }
   
 }
-
