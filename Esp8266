@@ -5,15 +5,19 @@ ESP8266 wifi(Serial3);
 #define PASSWORD    "nhu-a441"
 
 // ThingSpeak Settings
-char thingSpeakAddress[] = "203.72.0.26";
+char thingSpeakAddress[] = "35.163.200.232";
 int failedCounter = 0;
 int potPin = 0;
 
 float temperature = 0;
 long val=0;
 
-int photocellPin = A2;
+int photocellPin = A0;
 int va = 0;
+
+float sensor_volt;
+float RS_gas; // Get value of RS in a GAS
+float ratio; // Get ratio RS_GAS/RS_air
 
 void setup()
 {
@@ -51,9 +55,9 @@ void loop()
   uint8_t buffer[1024] = {0};
   // Read value from Analog Input Pin 0
   String analogValue0 = "10224076";
-
- String analogValue1= String(temperature);
+  String analogValue1= String(temperature);
   String analogValue2= String(va);
+  String analogValue3= String(sensor_volt);
  
 
   if (wifi.createTCP(thingSpeakAddress, 80)) {
@@ -64,20 +68,21 @@ void loop()
   }
   //35.163.200.232 210.240.202.109
  ///testard.php
-  String post ="POST /~nhu1419/testard.php HTTP/1.1 \r\nHost: 203.72.0.26\r\nConnection: close\r\n";
+  String post ="POST /mobileApp/Api/testard.php HTTP/1.1 \r\nHost: 35.163.200.232\r\nConnection: close\r\n";
   post +="Content-Type: application/x-www-form-urlencoded\r\n";
   
   post +="Content-Length: ";
-  post +=(analogValue0.length()+9);  //10224076 +9 -> 16
+  post +=(analogValue1.length()+analogValue2.length()+analogValue3.length()+31);  //10224076 +9 -> 16
   post +="\r\n\r\n";
   
   //post +=analogValue0;
   
   post +="sendthis=";
   post +=analogValue1;
-  //post +="&sendthis2=";
-  //post +=analogValue2;
-
+  post +="&sendthis2=";
+  post +=analogValue2;
+  post +="&sendthis3=";
+  post +=analogValue3;
 
  
    
@@ -101,15 +106,15 @@ void loop()
   } else {
       Serial.print("release tcp err\r\n");
   }
-  delay(5000);
+  delay(1000);
   
   {
-val=analogRead(potPin);
+val=analogRead(A4);
   temperature = (val*0.0048828125*100);
 // Serial.print("Tep= ");
 // Serial.print(temperature);
   //Serial.println(" C");
-  delay(500);
+  delay(1000);
   }
   
 {
@@ -117,7 +122,30 @@ va = analogRead(photocellPin); //讀取火焰感測器 (A2)上的值
 //Serial.print("va:");//顯示讀到的感測值
 //Serial.print(va);
 //Serial.println();
-delay(500);
+delay(1000);
 }
+{
+  int sensorValue = analogRead(A2);
+  sensor_volt=(float)sensorValue/1024*5.0;
+  RS_gas = (5.0-sensor_volt)/sensor_volt; // omit *RL
+ 
+  /*-Replace the name "R0" with the value of R0 in the demo of First Test -*/
+  ratio = RS_gas/1.54;  // ratio = RS/R0 
+  /*-----------------------------------------------------------------------*/
+ /*
+  Serial.print("sensor_volt = ");
+  Serial.println(sensor_volt);
   
+  Serial.print("RS_ratio = ");
+ Serial.println(RS_gas);
+  
+  Serial.print("Rs/R0 = ");
+  Serial.println(ratio);
+  
+  Serial.print("\n\n");
+*/
+  delay(1000);
+
+}
+
 }
